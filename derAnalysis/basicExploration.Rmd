@@ -1,0 +1,611 @@
+derfinder2 results exploration
+====================================
+
+# Introduction
+
+This report is meant to help explore the results of the [derfinder2](https://github.com/lcolladotor/derfinder2) package. While the report is rich, it is meant to just start the exploration of the results and exemplify some of the code used to do so. You will most likely need a more in-depth analysis for your specific data set.
+
+## Code setup
+
+```{r setup, warning=FALSE}
+suppressMessages(library("derfinder2"))
+suppressMessages(library("IRanges"))
+library("ggplot2")
+suppressMessages(library("gridExtra"))
+library("parallel")
+suppressMessages(library("GenomicRanges"))
+suppressMessages(library("ggbio"))
+suppressMessages(library("TxDb.Hsapiens.UCSC.hg19.knownGene"))
+
+## Set the prefix and number of cores if not present
+if(!"prefix" %in% ls()) {
+	prefix <- "run1"
+}
+if(!"cores" %in% ls()) {
+	## Make sure you asked for enough cores in the cluster queue!
+	cores <- 4
+}
+if(!"makeBestPlots" %in% ls()) {
+	makeBestPlots <- TRUE
+}
+```
+
+Using `r cores` cores on prefix `r ifelse(prefix=="", "(none used)", prefix)` from path `r getwd()`.
+
+
+```{r load}
+## Load files
+load(paste0(prefix, "/fullRegsAnno.Rdata"))
+load(paste0(prefix, "/fullNullstats.Rdata"))
+load(paste0(prefix, "/fullNullwidths.Rdata"))
+load(paste0(prefix, "/fullTime.Rdata"))
+load(paste0(prefix, "/fullRegionsDF.Rdata"))
+load(paste0(prefix, "/chr1/optionsStats-1.Rdata"))
+
+## Get chr lengths
+data(hg19Ideogram, package = "biovizBase")
+seqlengths(fullRegionsDF) <- seqlengths(hg19Ideogram)[names(seqlengths(fullRegionsDF))]
+
+## Find which chrs are present in the data set
+chrs <- levels(seqnames(fullRegionsDF))
+names(chrs) <- gsub("chr", "", chrs)
+```
+
+Processing code. 
+
+```{r procCode}
+### p-value functions
+## Recursively figure out the pvalues
+getPval <- function(df, vals, res, i, stop) {
+	## Figure out where to work
+	if(df$null[1] > vals[i]) {
+		j <- 1
+	} else {
+		j <- which(head(df$null, 20) > vals[i])[1]
+		if(is.na(j)) {
+			j <- which(head(df$null, 100) > vals[i])[1]
+		
+			if(is.na(j)) {
+				j <- which(df$null > vals[i])[1]
+			
+				if(is.na(j)) {
+					return(res)
+				}
+			}
+		}
+	}
+
+	res[i] <- df$n[j]
+
+	if(i == stop) {
+		return(res)
+	} else {
+		newdf <- df[j:nrow(df), ] 
+		getPval(newdf, vals, res, i + 1, stop)
+	}	
+}
+
+## Apply the recursive function by chunks
+getPval.apply <- function(k, cuts, df, vals, df.n) {
+	start <- which(df$null >= cuts[k])[1]
+	newvals <- as.numeric(vals[ vals >= cuts[k] & vals < cuts[k +1]])
+	tmpres <- rep(0, length(newvals))
+	if(is.na(start)) {
+		return(tmpres)
+	} else {
+		end <- which(df$null <= cuts[k + 1])[1]
+		if(is.na(end)) {
+			end <- df.n
+		} else {
+			end <- min(1 + end, df.n)
+		}
+		newdf <- df[start:end, ]
+		res <- getPval(newdf, newvals, tmpres, 1, length(tmpres))
+		return(res)
+	}
+}
+
+## Should it re-process the files or load previous ones?
+procFiles <- sapply(c(paste0(prefix, "/fullRegsAnnoPooled.Rdata"), paste0(prefix, "/fullNullSummary.Rdata")), file.exists)
+procFiles <- all(procFiles)
+
+if(procFiles) {
+	## Just load the pre-saved files
+	load(paste0(prefix, "/fullRegsAnnoPooled.Rdata"))
+	load(paste0(prefix, "/fullNullSummary.Rdata"))
+} else {
+	## Process the nullstats
+	nulls <- unlist(lapply(fullNullstats, as.numeric))
+	nullstats <- Rle(sort(nulls))
+	fullRegsAnno.ord <- fullRegsAnno[order(fullRegsAnno$value), ]
+	vals <- Rle(fullRegsAnno.ord$value)
+
+	## Construct null info
+	null.df <- data.frame(null=runValue(nullstats), n=length(nullstats) - cumsum(runLength(nullstats)))
+
+
+	## Calculate pvalues using all null stats from all the chrs
+	nCuts <- ceiling(length(vals) / 1000)
+	cuts <- quantile(vals, (0:nCuts)/nCuts)
+	cuts[length(cuts)] <- cuts[length(cuts)] * 1.1
+	df.n <- nrow(null.df)
+	pvals <- mclapply(seq_len(length(cuts) - 1), getPval.apply, cuts=cuts, df=null.df, vals=vals, df.n=df.n, mc.cores=cores)
+	pvals <- do.call(c, pvals)
+	fullRegsAnno.ord$pvaluesPool <- (pvals + 1) / (length(nullstats) + 1)
+	fullRegsAnno$pvaluesPool <- fullRegsAnno.ord$pvaluesPool[order(fullRegsAnno$value)]
+	rm(nullstats, fullRegsAnno.ord, vals, null.df, nCuts, cuts, df.n, pvals)
+
+	## For Fstat vs width
+	widths <- unlist(lapply(fullNullwidths, as.numeric))
+	howMany <- unlist(lapply(fullNullstats, length))
+	fullNullSummary <- data.frame(nullstat=nulls, nullwidth=widths, chr=rep(paste0("chr", names(fullNullstats)), howMany))
+	rm(nulls, widths, howMany)
+	fullNullSummary$area <- fullNullSummary$nullstat * fullNullSummary$nullwidth
+
+	## Area penalization scheme 1
+	fullRegsAnno$penArea1 <- fullRegsAnno$value * fullRegsAnno$L
+	tmp <- fullRegsAnno$L > 30
+	fullRegsAnno$penArea1[tmp] <- fullRegsAnno$value[tmp] * 30 + fullRegsAnno$value[tmp] * sqrt(fullRegsAnno$L[tmp] - 30)
+	fullNullSummary$penArea1 <- fullNullSummary$nullstat * fullNullSummary$nullwidth
+	tmp <- fullNullSummary$nullwidth > 30
+	fullNullSummary$penArea1[tmp] <- fullNullSummary$nullstat[tmp] * 30 + fullNullSummary$nullstat[tmp] * sqrt(fullNullSummary$nullwidth[tmp] - 30)
+
+	## Area penalization scheme 2
+	fullRegsAnno$penArea2 <- fullRegsAnno$value * fullRegsAnno$L
+	tmp <- fullRegsAnno$L > 30
+	fullRegsAnno$penArea2[tmp] <- fullRegsAnno$value[tmp] * 30 + fullRegsAnno$value[tmp] * log(fullRegsAnno$L[tmp] - 30)
+	fullNullSummary$penArea2 <- fullNullSummary$nullstat * fullNullSummary$nullwidth
+	tmp <- fullNullSummary$nullwidth > 30
+	fullNullSummary$penArea2[tmp] <- fullNullSummary$nullstat[tmp] * 30 + fullNullSummary$nullstat[tmp] * log(fullNullSummary$nullwidth[tmp] - 30)
+	rm(tmp)
+}
+
+## For genome overview plots -- needed before version 0.0.12
+#fullRegionsDF$significant <- factor(fullRegionsDF$pvalues < 0.05, levels=c(TRUE, FALSE))
+#fullRegionsDF$significantQval <- factor(fullRegionsDF$qvalues < 0.10, levels=c(TRUE, FALSE))
+fullRegionsDF$significantPool <- factor(fullRegsAnno$pvaluesPool < 0.05, levels=c(TRUE, FALSE))
+```
+
+
+# P-values distributions
+
+## P-values
+
+```{r pvals, fig.width=14, fig.height=14, dev="CairoPNG"}
+## Visual comparison
+p1 <- ggplot(fullRegsAnno, aes(x=pvalues, colour=chr)) + geom_line(stat="density") + xlim(0, 1) + labs(title="Density of p-values - by chr") + xlab("p-values") + scale_colour_discrete(limits=chrs)
+p2 <- ggplot(fullRegsAnno, aes(x=pvaluesPool, colour=chr)) + geom_line(stat="density") + xlim(0, 1) + labs(title="Density of p-values - pooled") + xlab("p-values") + scale_colour_discrete(limits=chrs)
+grid.arrange(p1, p2)
+```
+
+This plot is useful for comparing the densities of the permutted p-values for the regions. The top panel shows the p-values computed by chromosome, meaning that the null statistics used were chromosome specific. The second panel shows the p-values computed by pooling the null statistics from all the chromosomes.
+
+There are a total of `r nrow(fullRegsAnno)` regions and `r nrow(fullNullSummary)` null statistics across all chromosomes.
+
+
+```{r compPval}
+## Compare the pvalues
+summary(fullRegsAnno$pvalues)
+summary(fullRegsAnno$pvaluesPool)
+```
+
+The previous output shows the summaries for the p-values distribution. First, by chr and next using by pooling.
+
+```{r summQval}
+summary(fullRegsAnno$qvalues)
+```
+
+This is the numerical summary of the distribution of the q-values.
+
+## Un-pooled vs pooled
+
+
+```{r difference, dev="CairoPNG"}
+## Compare them directly
+hist(fullRegsAnno$pvalues - fullRegsAnno$pvaluesPool, freq=FALSE, col="light blue", main="Difference in p-values", xlab="p-value - pooled p-value")
+lines(density(fullRegsAnno$pvalues - fullRegsAnno$pvaluesPool), col="red")
+```
+
+This plot shows the paired differences between the by chr p-values and the pooled p-values.
+
+```{r diffSummary}
+summary(fullRegsAnno$pvalues - fullRegsAnno$pvaluesPool)
+```
+
+This is a numerical summary of the differences.
+
+# F-stat vs width
+
+```{r widths, fig.width=14, fig.height=14, dev="CairoPNG"}
+p3 <- ggplot(fullRegsAnno, aes(x=log10(L), y=value, colour=chr, alpha=area)) + geom_point() + labs(title="F-stat vs width (regions)") + xlab("Region width (log10)") + ylab("F-stat") + scale_colour_discrete(limits=chrs)
+p4 <- ggplot(fullNullSummary, aes(x=log10(nullwidth), y=nullstat, colour=chr, alpha=area)) + geom_point() + labs(title="F-stat vs width (null regions)") + xlab("Region width (log10)") + ylab("F-stat") + scale_colour_discrete(limits=chrs)
+grid.arrange(p3, p4)
+```
+
+This plot shows the relationship between the F-statistics and the width (length) for the regions. The bottom panel is the same information but this time for the null regions.
+
+# Region width and area
+
+```{r regLen, fig.width=14, fig.height=14, dev="CairoPNG"}
+p5a <- ggplot(fullRegsAnno, aes(x=log10(L), colour=chr)) + geom_line(stat="density") + labs(title="Density of region lengths") + xlab("Region width (log10)") + scale_colour_discrete(limits=chrs)
+p5b <- ggplot(subset(fullRegsAnno, pvalues < 0.05), aes(x=log10(L), colour=chr)) + geom_line(stat="density") + labs(title="Density of region lengths (significant only)") + xlab("Region width (log10)") + scale_colour_discrete(limits=chrs)
+grid.arrange(p5a, p5b)
+```
+
+This plot shows the density of the region lengths for the regions (all) and regions (significant only).
+
+
+```{r regArea, fig.width=14, fig.height=14, dev="CairoPNG"}
+p7a <- ggplot(fullRegsAnno, aes(x=log10(area), colour=chr)) + geom_line(stat="density") + labs(title="Density of region areas") + xlab("Region area (log10)") + scale_colour_discrete(limits=chrs)
+p7b <- ggplot(subset(fullRegsAnno, pvalues < 0.05), aes(x=log10(area), colour=chr)) + geom_line(stat="density") + labs(title="Density of region areas (significant only)") + xlab("Region area (log10)") + scale_colour_discrete(limits=chrs)
+grid.arrange(p7a, p7b)
+```
+
+This plot shows the density of the region areas for the regions (all) and regions (significant only).
+
+```{r nullLengthArea, fig.width=14, fig.height=14, dev="CairoPNG"}
+p6 <- ggplot(fullNullSummary, aes(x=log10(nullwidth), colour=chr)) + geom_line(stat="density") + labs(title="Density of null region lengths") + xlab("Region width (log10)") + scale_colour_discrete(limits=chrs)
+p8 <- ggplot(fullNullSummary, aes(x=log10(area), colour=chr)) + geom_line(stat="density") + labs(title="Density of null region areas") + xlab("Region area (log10)") + scale_colour_discrete(limits=chrs)
+grid.arrange(p6, p8)
+```
+
+This plot shows the density of the null region lengths and areas.
+
+# Q-values
+
+## Distribution
+
+```{r qvals, fig.width=10, fig.height=10, dev="CairoPNG"}
+## Q-values dist
+q1 <- ggplot(fullRegsAnno, aes(x=qvalues, colour=chr)) + geom_line(stat="density") + xlim(0, 1) + labs(title="Density of q-values") + xlab("q-values") + scale_colour_discrete(limits=chrs)
+q1
+```
+
+This plot shows the distribution of the q-values.
+
+## Region width and area, by q-value
+ 
+```{r regLenQval, fig.width=14, fig.height=14, dev="CairoPNG"}
+q2 <- ggplot(fullRegsAnno, aes(x=log10(L), colour=chr)) + geom_line(stat="density") + labs(title="Density of region lengths") + xlab("Region width (log10)") + scale_colour_discrete(limits=chrs)
+sub <- subset(fullRegsAnno, qvalues < 0.10)
+if(nrow(sub) > 0) {
+	q3 <- ggplot(sub, aes(x=log10(L), colour=chr)) + geom_line(stat="density") + labs(title="Density of region lengths (qvalue significant only)") + xlab("Region width (log10)") + scale_colour_discrete(limits=chrs)
+	grid.arrange(q2, q3)
+} else {
+	q2
+}
+
+```
+This plot shows the density of the region lengths for the regions (all) and regions (qvalue significant only, if any are present!). In this case significance is q-value < 0.10.
+
+```{r regAreaQval, fig.width=14, fig.height=14, dev="CairoPNG"}
+q4 <- ggplot(fullRegsAnno, aes(x=log10(area), colour=chr)) + geom_line(stat="density") + labs(title="Density of region areas") + xlab("Region area (log10)") + scale_colour_discrete(limits=chrs)
+if(nrow(sub) > 0) {
+	q5 <- ggplot(subset(fullRegsAnno, qvalues < 0.10), aes(x=log10(area), colour=chr)) + geom_line(stat="density") + labs(title="Density of region areas (qvalue significant only)") + xlab("Region area (log10)") + scale_colour_discrete(limits=chrs)
+	grid.arrange(q4, q5)
+} else {
+	q4
+}
+rm(sub)
+```
+
+This plot shows the density of the region areas for the regions (all) and regions (qvalue significant only, if any are present!). In this case significance is q-value < 0.10.
+
+
+# Penalization exploration
+
+Below we present two alternative approaches for ranking regions based on the area and penalized by the width of the region.
+
+## Scheme 1
+
+```{r pen1, fig.width=14, fig.height=14, dev="CairoPNG"}
+p9 <- ggplot(fullRegsAnno, aes(x=log10(penArea1), colour=chr)) + geom_line(stat="density") + labs(title="Density of penalized area (scheme 1)") + xlab("Penalized area with sqrt and width > 30 (log10)") + scale_colour_discrete(limits=chrs)
+p10 <- ggplot(fullNullSummary, aes(x=log10(penArea1), colour=chr)) + geom_line(stat="density") + labs(title="Density of null penalized area (scheme 1)") + xlab("Penalized area with sqrt and width > 30 (log10)") + scale_colour_discrete(limits=chrs)
+grid.arrange(p9, p10)
+```
+This plot shows the densities for the penalized areas using:
+
+$$ \begin{cases} Fstat * width \text{ if } width \leq 30 \\ Fstat * 30 + Fstat * \sqrt{ width - 30} & \text{ if } width > 30 \end{cases} $$
+
+Below are the numerical summaries of the penalized areas (scheme 1) for the regions and the null regions in log10 scale.
+
+```{r penSum1}
+summary(log10(fullRegsAnno$penArea1))
+summary(log10(fullNullSummary$penArea1))
+```
+
+
+## Scheme 2
+
+```{r pen2, fig.width=14, fig.height=14, dev="CairoPNG"}
+p11 <- ggplot(fullRegsAnno, aes(x=log10(penArea2), colour=chr)) + geom_line(stat="density") + labs(title="Density of penalized area (scheme 2)") + xlab("Penalized area with log and width > 30 (log10)") + scale_colour_discrete(limits=chrs)
+p12 <- ggplot(fullNullSummary, aes(x=log10(penArea2), colour=chr)) + geom_line(stat="density") + labs(title="Density of null penalized area (scheme 2)") + xlab("Penalized area with log and width > 30 (log10)") + scale_colour_discrete(limits=chrs)
+grid.arrange(p11, p12)
+```
+
+This plot shows the densities for the penalized areas using:
+
+$$ \begin{cases} Fstat * width \text{ if } width \leq 30 \\ Fstat * 30 + Fstat * \log \left( width - 30 \right) & \text{ if } width > 30 \end{cases} $$
+
+Below is are the numerical summaries of the penalized areas (scheme 2) for the regions and the null regions in log10 scale.
+
+```{r penSum2}
+summary(log10(fullRegsAnno$penArea2))
+summary(log10(fullNullSummary$penArea2))
+```
+
+# Genomic overview
+
+## P-values by chr
+
+```{r genomeOverview1, message=FALSE, fig.width=7, fig.height=9, dev="CairoPNG", dpi=300}
+plotOverview(regions=fullRegionsDF, type="pval", base_size=30, areaRel=10, legend.position=c(0.97, 0.12))
+```
+
+This plot shows the genomic locations of the regions found in the analysis. The significant regions (p-value less than 0.05) are highlighted and the area of the regions is shown on top of each chromosome. Note that the area is in a relative scale.
+
+## Q-values
+
+```{r genomeOverview2, message=FALSE, fig.width=7, fig.height=9, dev="CairoPNG", dpi=300}
+plotOverview(regions=fullRegionsDF, type="qval", base_size=30, areaRel=10, legend.position=c(0.97, 0.12))
+```
+
+This plot is similar to the previous one except that significance is now determined by a q-value less than 0.10. 
+
+## Pooled p-values
+
+```{r genomeOverview3, message=FALSE, fig.width=7, fig.height=9, dev="CairoPNG", dpi=300}
+## Graphical setup
+ann_text <- data.frame(x=225e6, y=10, lab="Area", seqnames="chrX")
+ann_line <- data.frame(x=200e6, xend=215e6, y=10, seqnames="chrX")
+
+## Make the plot ^^
+autoplot(seqinfo(fullRegionsDF)) +
+	layout_karyogram(fullRegionsDF, aes(fill=significantPool, color=significantPool), geom="rect") +
+	layout_karyogram(fullRegionsDF, aes(x=midpoint, y=area), geom="line", color="coral1", ylim=c(10, 20)) +
+	labs(title="Overview of regions found in the genome; significant: p-value <0.05 (pooled)") +
+	scale_colour_manual(values=c("chartreuse4", "wheat2")) +
+	scale_fill_manual(values=c("chartreuse4", "wheat2")) +
+	geom_text(aes(x=x, y=y), data=ann_text, label="Area", size=rel(10)) +
+	geom_segment(aes(x=x, xend=xend, y=y, yend=y), data=ann_line, colour="coral1") +
+	xlab("Genomic coordinate") +
+	theme(text=element_text(size=30), legend.background=element_blank(), legend.position=c(0.97, 0.12))
+```
+This is a very similar plot that uses the pooled p-values to determine significance (less than 0.05).
+
+
+## Annotation
+
+```{r genomeOverview4, message=FALSE, fig.width=7, fig.height=9, dev="CairoPNG", dpi=300}
+plotOverview(regions=fullRegionsDF, annotation=fullRegsAnno, type="annotation", base_size=30, areaRel=10, legend.position=c(0.97, 0.12))
+```
+
+This final genomic overview plot shows the annotation region type. Note that the regions are shown only if the information is available. Below is a table of the actual number of results per annotation region type.
+
+```{r annoReg}
+table(fullRegsAnno$region, useNA="always")
+```
+
+
+
+# Best 20 regions
+
+```{r plotGenome, message=FALSE, eval=makeBestPlots}
+## Load coverage data
+load("../fullCoverage/fullCov.Rdata")
+
+## Graphical setup: ideograms 
+p.ideos <- lapply(chrs, function(xx) { 
+	plotIdeogram(genome = "hg19", subchr=xx)
+})
+names(p.ideos) <- chrs
+
+
+## Graphical setup: main plotting function
+regionPlot <- function(idx, tUse="pval") {
+	## Chr specific selections
+	chr <- as.character(seqnames(fullRegionsDF[idx]))
+	chrnum <- gsub("chr", "", chr)
+	p.ideo <- p.ideos[[chr]]
+	covInfo <- fullCov[[chrnum]]
+	
+	## Make the plot
+	p <- plotRegion(idx, regions=fullRegionsDF, annotation=fullRegsAnno, coverageInfo=covInfo, groupInfo=optionsStats$group, titleUse=tUse, txdb=TxDb.Hsapiens.UCSC.hg19.knownGene, p.ideogram=p.ideo)
+	print(p)
+	rm(p.ideo, covInfo)
+	
+	return(invisible(TRUE))	
+}
+```
+
+
+## By p-value (chr)
+Below are the best 20 regions ordered by p-value. There are `r sum(fullRegsAnno$pvalues < 0.05)` regions with p-value less than 0.05 and `r sum(fullRegsAnno$pvalues < 0.05 & fullRegsAnno$L > 10)` that also have a length greater than 10 base-pairs.
+
+
+```{r bestPval, message=FALSE, fig.width=11, fig.height=13, dev="CairoPNG", eval=makeBestPlots}
+bestPval <- head(order(fullRegsAnno$pvalues), 20)
+## Genome plots
+for(idx in bestPval) {
+	regionPlot(idx)
+}
+
+## Output detail
+fullRegsAnno[bestPval, ]
+```
+
+## By q-value
+Below are the best 20 regions ordered by q-value. There are `r sum(fullRegsAnno$qvalues < 0.10)` regions with q-value less than 0.10 and `r sum(fullRegsAnno$qvalues < 0.10 & fullRegsAnno$L > 10)` that also have a length greater than 10 base-pairs.
+
+```{r bestQval, message=FALSE, fig.width=11, fig.height=13, dev="CairoPNG", eval=makeBestPlots}
+bestQval <- head(order(fullRegsAnno$qvalues), 20)
+## Genome plots
+for(idx in bestQval) {
+	regionPlot(idx, tUse="qval")
+}
+
+## Output detail
+fullRegsAnno[bestQval, ]
+```
+
+
+## By p-value (pooled)
+Below are the best 20 regions ordered by p-value (pooled ones). There are `r sum(fullRegsAnno$pvaluesPool < 0.05)` regions with pooled p-value less than 0.05 and `r sum(fullRegsAnno$pvaluesPool < 0.05 & fullRegsAnno$L > 10)` that also have a length greater than 10 base-pairs.
+
+```{r bestPooled, message=FALSE, fig.width=11, fig.height=13, dev="CairoPNG", eval=makeBestPlots}
+bestPooled <- head(order(fullRegsAnno$pvaluesPool), 20)
+## Genome plots
+for(idx in bestPooled) {
+	regionPlot(idx)
+}
+
+## Output detail
+fullRegsAnno[bestPooled, ]
+```
+
+## By area
+
+Below are the best 20 regions ordered by area. 
+
+```{r bestArea, message=FALSE, fig.width=11, fig.height=13, dev="CairoPNG", eval=makeBestPlots}
+bestArea <- head(order(fullRegsAnno$area, decreasing=TRUE), 20)
+## Genome plots
+for(idx in bestArea) {
+	regionPlot(idx)
+}
+
+## Output detail
+fullRegsAnno[bestArea, ]
+```
+
+## By area (scheme 1)
+
+Below are the best 20 regions ordered by penalized area (scheme 1). 
+
+```{r bestPen1Area, message=FALSE, fig.width=11, fig.height=13, dev="CairoPNG", eval=makeBestPlots}
+bestPen1Area <- head(order(fullRegsAnno$penArea1, decreasing=TRUE), 20)
+## Genome plots
+for(idx in bestPen1Area) {
+	regionPlot(idx)
+}
+
+## Output detail
+fullRegsAnno[bestPen1Area, ]
+```
+
+## By area (scheme 2)
+
+Below are the best 20 regions ordered by penalized area (scheme 2). 
+
+```{r bestPen2Area, message=FALSE, fig.width=11, fig.height=13, dev="CairoPNG", eval=makeBestPlots}
+bestPen2Area <- head(order(fullRegsAnno$penArea2, decreasing=TRUE), 20)
+## Genome plots
+for(idx in bestPen2Area) {
+	regionPlot(idx)
+}
+
+## Output detail
+fullRegsAnno[bestPen2Area, ]
+```
+
+# Wallclock time
+
+```{r time, fig.width=16, dev="CairoPNG"}
+## Process the time info
+time <- lapply(fullTime, function(x) data.frame(diff(x)))
+time <- do.call(rbind, time)
+colnames(time) <- "sec"
+time$sec <- as.integer(round(time$sec))
+time$min <- time$sec / 60
+time$chr <- paste0("chr", gsub("\\..*", "", rownames(time)))
+time$step <- gsub(".*\\.", "", rownames(time))
+rownames(time) <- seq_len(nrow(time))
+
+## Make plot
+ggplot(time, aes(x=step, y=min, colour=chr)) + geom_point() + labs(title="Wallclock time by step") + scale_colour_discrete(limits=chrs) + scale_x_discrete(limits=names(fullTime[[1]])[-1]) + ylab("Time (min)") + xlab("Step")
+```
+
+This plot shows the wallclock time spent in each of the derfinder2 analysis steps.
+
+# Permutations info
+
+Below is the information on how the samples were permutted when performing the permutations. 
+
+
+```{r permute}
+## Get the permutation information
+nSamples <- seq_len(length(optionsStats$group))
+seeds <- 1:10
+permuteInfo <- lapply(seeds, function(x) {
+	set.seed(x)
+	idx <- sample(nSamples)
+	data.frame(optionsStats$group[idx])
+})
+permuteInfo <- cbind(data.frame(optionsStats$group), do.call(cbind, permuteInfo))
+colnames(permuteInfo) <- c("original", paste0("perm", 1:10))
+## The raw information
+# permuteInfo
+
+n <- names(table(permuteInfo[, 2]))
+permuteDetail <- data.frame(matrix(NA, nrow=10*length(n), ncol = 2 + length(n)))
+permuteDetail[, 1] <- rep(1:10, each=length(n))
+permuteDetail[, 2] <- rep(n, 10)
+colnames(permuteDetail) <- c("permutation", "group", as.character(n))
+l <- 1
+m <- 3:ncol(permuteDetail)
+for(j in n) {
+	k <- which(permuteInfo[, 1] == j)
+	for(i in 2:11) {
+		permuteDetail[l, m] <- table(permuteInfo[k, i])
+		l <- l + 1
+	}
+}
+permuteDetail
+```
+
+This table shows how the group labels were permutted. This can be useful to detect whether a permutation in particular had too many samples of a group labeled as another group, meaning that the resulting permutted group label resulted in pretty much a name change.
+
+```{r permute2}
+summary(permuteDetail[, m])
+```
+
+This table shows the summary per group of the first table and can be used for faster detection of anomalies.
+
+```{r permuteExtra, eval=FALSE}
+## By index
+permuteInfoIdx <- lapply(seeds, function(x) {
+	set.seed(x)
+	idx <- sample(nSamples)
+	data.frame(nSamples[idx])
+})
+permuteInfoIdx <- cbind(data.frame(nSamples), do.call(cbind, permuteInfoIdx))
+colnames(permuteInfoIdx) <- c("original", paste0("perm", 1:10))
+
+## Only if you really want to see the indexes
+permuteInfoIdx
+```
+
+Note that in derfinder2 the re-sampling of the samples is done without replacement. This is done in an effort to avoid singular model matrices. While the sample balance is the same across the permutations, what changes are the adjusted variables (including the column medians).
+
+# Reproducibility
+
+```{r reproducibility}
+## Save the hard work
+if(!procFiles) {
+	save(fullRegsAnno, file=paste0(prefix, "/fullRegsAnnoPooled.Rdata"))
+	save(fullNullSummary, file=paste0(prefix, "/fullNullSummary.Rdata"))
+}
+
+## Date the report was generated
+Sys.time()
+## Processing time in seconds
+proc.time()
+## Session info
+sessionInfo()
+```
+
+This report written by [L. Collado Torres](http://www.biostat.jhsph.edu/~lcollado/#.Ug1RI2TF2Tw) and was generated using [knitrBootstrap](https://github.com/jimhester/knitrBootstrap).
+
+```{r cite, results="asis"}
+citation("derfinder2")
+```
