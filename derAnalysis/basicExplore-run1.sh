@@ -7,7 +7,7 @@ cat > .basicE-${SHORT}.${PREFIX}.sh <<EOF
 #!/bin/bash	
 #$ -cwd 
 #$ -pe local ${CORES}
-#$ -l jabba,mem_free=20G,h_vmem=40G,h_fsize=10G
+#$ -l jabba,mem_free=6G,h_vmem=10G,h_fsize=10G
 #$ -m e 
 #$ -N ${SHORT}basicE-${PREFIX}
 

@@ -1,6 +1,8 @@
 Explanation of files
 ====================
 
+This folder has the scripts for extracting the un-filtered coverage information from the BAM files.
+
 # fullCoverage.sh
 
 This shell script runs __derfinder2__ data processing steps: __makeBamList()__ and __loadCoverage()__. The coverage cutoff used is set to _NULL_ so that no filtering will be done when processing the BAM files. 

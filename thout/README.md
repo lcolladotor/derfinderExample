@@ -1,6 +1,8 @@
 Explanation of files
 ====================
 
+This folder has the files related to running __TopHat__ to align the reads.
+
 # find_insert_size.sh
 
 This shell script uses the steps described in http://molecularevolution.org/resources/activities/velvet_and_bowtie_activity to determine the insert sizes for the paired-end reads.

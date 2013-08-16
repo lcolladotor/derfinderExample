@@ -1,6 +1,8 @@
 Explanation of files
 ====================
 
+This folder has the scripts for running the main parts of the __derfinder2__ analysis pipeline and exploring the results in a HTML report.
+
 # derfinder2-analysis.R
 
 This R script is the main script for running the __derfinder2__ analysis pipeline. It runs the main steps __makeModels()__, __preprocessCoverage()__, __calculateStats()__, __calculatePvalues()__ and ends with __annotateNearest()__ from the __bumphunter__ package.
