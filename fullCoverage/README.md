@@ -3,7 +3,7 @@ Explanation of files
 
 # fullCoverage.sh
 
-This shell script runs `derfinder2` data processing steps: `makeBamList()` and `loadCoverage()`. The coverage cutoff used is set to NULL so that no filtering will be done when processing the BAM files. 
+This shell script runs `S derfinder2` data processing steps: `S makeBamList()` and `S loadCoverage()`. The coverage cutoff used is set to NULL so that no filtering will be done when processing the BAM files. 
 
 It creates several hidden shell scripts that are then submitted to the cluster.
 

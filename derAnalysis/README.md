@@ -3,9 +3,9 @@ Explanation of files
 
 # derfinder2-analysis.R
 
-This R script is the main script for running the `derfinder2` analysis pipeline. It runs the main steps `makeModels()`, `preprocessCoverage()`, `calculateStats()`, `calculatePvalues()` and ends with `annotateNearest()` from the `bumphunter` package.
+This R script is the main script for running the `S derfinder2` analysis pipeline. It runs the main steps `S makeModels()`, `S preprocessCoverage()`, `S calculateStats()`, `S calculatePvalues()` and ends with `S annotateNearest()` from the `S bumphunter` package.
 
-The script is written in such a way that each step of the pipeline is timed as this information can be useful later on. When running `derfinder2` yourself you will have to modify this script in such a way that the models are constructed according to your own data. Most of the other steps will remain untouched, except for options like cutoffs.
+The script is written in such a way that each step of the pipeline is timed as this information can be useful later on. When running `S derfinder2` yourself you will have to modify this script in such a way that the models are constructed according to your own data. Most of the other steps will remain untouched, except for options like cutoffs.
 
 # der2Analysis.sh
 

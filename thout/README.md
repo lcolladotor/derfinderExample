@@ -12,7 +12,7 @@ This shell script uses the steps described in http://molecularevolution.org/reso
 
 # runth.sh
 
-This shell script runs `TopHat` on the single-end files. It creates several hidden shell scripts that are then submitted to the cluster.
+This shell script runs `S TopHat` on the single-end files. It creates several hidden shell scripts that are then submitted to the cluster.
 
 # runth_paired.sh
 
@@ -20,4 +20,4 @@ This shell script runs TopHat on the paired-end files using the insert size info
 
 # makeBai.sh
 
-This simple shell script uses SAMtools to generate the BAM file indexes for the alignment files.
+This simple shell script uses `S SAMtools` to generate the BAM file indexes for the alignment files.
