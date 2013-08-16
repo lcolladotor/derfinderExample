@@ -1,7 +1,7 @@
 #!/bin/bash
 #$ -cwd	
 #$ -m e
-#$ -l jabba,mem_free=30G,h_vmem=100G
+#$ -l jabba,mem_free=6G,h_vmem=10G
 #$ -N derEx-mergeCov
 
 echo "**** Job starts ****"

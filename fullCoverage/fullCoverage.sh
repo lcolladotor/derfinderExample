@@ -30,7 +30,7 @@ mv ${SHORT}.${chr}.* ${WDIR}/logs/
 echo "**** Job ends ****"
 date
 EOF
-	call="qsub -cwd -l jabba,mem_free=50G,h_vmem=100G,h_fsize=30G -N ${SHORT}.${chr} -m e ${WDIR}/.${SHORT}.${chr}.sh"
+	call="qsub -cwd -l jabba,mem_free=3G,h_vmem=10G,h_fsize=10G -N ${SHORT}.${chr} -m e ${WDIR}/.${SHORT}.${chr}.sh"
 	echo $call
 	$call
 done
