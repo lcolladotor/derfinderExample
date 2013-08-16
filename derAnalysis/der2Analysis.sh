@@ -20,7 +20,7 @@ do
 	echo "Creating script for chromosome ${chrnum}"
 	chr="chr${chrnum}"
 	outdir="${PREFIX}/${chr}"
-	cat > ${WDIR}/.${SHORT}.${outdir}.sh <<EOF
+	cat > ${WDIR}/.${SHORT}.${chrnum}.sh <<EOF
 #!/bin/bash	
 echo "**** Job starts ****"
 date
