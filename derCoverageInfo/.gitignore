@@ -1,0 +1,7 @@
+## Output files
+*Rdata
+logs/
+
+## Hidden script files
+.*sh
+
