@@ -35,12 +35,12 @@ cd ${WDIR}/${outdir}
 Rscript-devel ${WDIR}/derfinder2-analysis.R -d "${DATADIR}/${chr}CovInfo.Rdata" -c "${chrnum}" -m ${P} -v TRUE
 
 # Move log files into the logs directory
-mv ${WDIR}/${SHORT}.${outdir}.* ${WDIR}/${outdir}/logs/
+mv ${WDIR}/${SHORT}.${chrnum}.* ${WDIR}/${outdir}/logs/
 
 echo "**** Job ends ****"
 date
 EOF
-	call="qsub -cwd -l jabba,mem_free=125G,h_vmem=20G,h_fsize=10G -pe local ${P} -N ${SHORT}.${outdir} -m e ${WDIR}/.${SHORT}.${outdir}.sh"
+	call="qsub -cwd -l jabba,mem_free=125G,h_vmem=20G,h_fsize=10G -pe local ${P} -N ${SHORT}.${chrnum} -m e ${WDIR}/.${SHORT}.${chrnum}.sh"
 	echo $call
 	$call
 done
