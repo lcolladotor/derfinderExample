@@ -83,7 +83,7 @@ dirs <- colnames(data$coverage)
 info <- genomeInfo
 ## Match dirs with actual rows in the info table
 
-match <- sapply(dirs, function(x) { which(info$sample == x)})
+match <- sapply(dirs, function(x) { which(info$run == x)})
 info <- info[match, ]
 
 ## Define the groups
