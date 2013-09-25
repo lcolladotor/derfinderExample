@@ -2,11 +2,13 @@
 
 # Directories
 MAINDIR=/amber2/scratch/lcollado/derfinderExample
-WDIR=${MAINDIR}/fullCoverage
+WDIR=${MAINDIR}/derCoverageInfo
 DATADIR=${MAINDIR}/thout
 
 # Define variables
 SHORT='fullCov-derEx'
+
+## If you have enough cores, use 1 per chr
 CORES=24
 
 # Construct shell file
@@ -20,7 +22,7 @@ date
 mkdir -p ${WDIR}/logs
 
 # Load the data, save the coverage without filtering, then save each file separately
-R-devel -e "library(derfinder2); dirs <- makeBamList(datadir='${DATADIR}', samplepatt='RR'); cores <- ${CORES}; source('fullCoverage.R')"
+Rscript-devel ${WDIR}/derfinder2-fullCoverage.R -d "${DATADIR}" -p "RR" -c 5 -m ${CORES} -n TRUE -v TRUE
 
 ## Move log files into the logs directory
 mv ${SHORT}.* ${WDIR}/logs/
