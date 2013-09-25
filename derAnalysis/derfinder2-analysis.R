@@ -85,7 +85,7 @@ group <- genomeInfo$pop
 adjustvars <- data.frame(genomeInfo$gender)
 
 ## Run the analysis
-analyzeChr(chrnum=opt$chr, coverageInfo=data, testvars=group, adjustvars=adjustvars, cutoffFstat=1e-06, cutoffType="theoretical", nPermute=10, seeds=1:10, maxClusterGap=3000, subject="hg19", mc.cores=opt$mcores, verbose=opt$verbose)
+analyzeChr(chrnum=opt$chr, coverageInfo=data, testvars=group, adjustvars=adjustvars, cutoffFstat=1e-05, cutoffType="theoretical", nPermute=10, seeds=1:10, maxClusterGap=3000, subject="hg19", mc.cores=opt$mcores, verbose=opt$verbose)
 
 
 if(opt$prof) {
