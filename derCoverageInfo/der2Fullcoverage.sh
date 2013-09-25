@@ -32,6 +32,6 @@ date
 EOF
 
 ## Memory limits set assuming 24 cores will be used
-call="qsub -cwd -l jabba,mem_free=72G,h_vmem=10G,h_fsize=10G -pe local ${CORES} -N ${SHORT} -m e ${WDIR}/.${SHORT}.sh"
+call="qsub -cwd -l jabba,mem_free=100G,h_vmem=20G,h_fsize=30G -pe local ${CORES} -N ${SHORT} -m e ${WDIR}/.${SHORT}.sh"
 echo $call
 $call
