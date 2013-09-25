@@ -48,10 +48,13 @@ if (!is.null(opt$help)) {
 if (is.null(opt$verbose)) opt$verbose <- TRUE
 
 ## Identify the data directories
+## You might have to change the 'bamterm' argument depending on how you organized your data
 dirs <- makeBamList(datadir=opt$datadir, samplepatt=opt$pattern)
 
 ## In some cases, you might want to modify the names of the dirs object
 ## These names specify the column names used in the DataFrame objects.
+## For example, they could end with _out
+# names(dirs) <- gsub('_out', '', names(dirs))
 
 ## Load the coverage information without filtering
 chrnums <- c(1:22, 'X', 'Y')
