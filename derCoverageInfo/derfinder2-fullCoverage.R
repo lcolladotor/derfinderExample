@@ -81,7 +81,7 @@ myFilt <- function(chrnum) {
 	output <- paste0(varname, ".Rdata")
 	
 	## Save the DataFrame
-	#save(list=varname, file=output, compress="gzip")
+	save(list=varname, file=output, compress="gzip")
 	
 	## Finish
 	return(res)
