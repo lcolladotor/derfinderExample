@@ -24,6 +24,8 @@ First, the un-filtered coverage was saved in [derCoverageInfo](https://github.co
 
 Second, the filtered coverage was saved in [derCoverageInfo](https://github.com/lcolladotor/derfinderExample/tree/master/derCoverageInfo) separately for each chromosome in `chr*CovInfo.Rdata`.
 
+Finally, the genomic state information is generated for hg19 based on UCSC knownGene in [derGenomicState](https://github.com/lcolladotor/derfinderExample/tree/master/derGenomicState). This information is ultimately used for running __plotRegionCoverage()__.
+
 ## derfinder2 analysis
 
 The main steps of the __derfinder2__ analysis pipeline are carried out in [derAnalysis/derfinder2-analysis.R](https://github.com/lcolladotor/derfinderExample/blob/master/derAnalysis/derfinder2-analysis.R) located in the [derAnalysis](https://github.com/lcolladotor/derfinderExample/tree/master/derAnalysis) folder. The richness of your data set (coverage depth and number of samples) and the number of cores needed for wallclock speed purposes will greatly determine how much RAM __derfinder2__ will use. On this example data set, chromosome 1 took 20 mins 40 secs and 12.65 GB of RAM with 2 cores. With another richer data set, the same chromosome took 1 hr 14 mins and 128 GB of RAM using 8 cores. Note that we could have exchanged wallclock time for RAM if we needed to.
