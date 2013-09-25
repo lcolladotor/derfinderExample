@@ -8,7 +8,7 @@
 echo "**** Job starts ****"
 date
 
-R -e "library(derfinder2); library('TxDb.Hsapiens.UCSC.hg19.knownGene'); txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene; GenomicState.Hsapiens.UCSC.hg19.knownGene <- makeGenomicState(txdb=txdb); save(GenomicState.Hsapiens.UCSC.hg19.knownGene, file='GenomicState.Hsapiens.UCSC.hg19.knownGene.Rdata')"
+R -e "library(derfinder2); library('TxDb.Hsapiens.UCSC.hg19.knownGene'); txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene; GenomicState.Hsapiens.UCSC.hg19.knownGene <- makeGenomicState(txdb=txdb); save(GenomicState.Hsapiens.UCSC.hg19.knownGene, file='GenomicState.Hsapiens.UCSC.hg19.knownGene.Rdata'); proc.time(); sessionInfo()"
 
 ### Done
 echo "**** Job ends ****"
