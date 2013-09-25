@@ -13,7 +13,7 @@ spec <- matrix(c(
 	'pattern', 'p', 1, "character", "Sample pattern",
 	'cutoff', 'c', 1, "integer", "Filtering cutoff used",
 	'mcores', 'm', 1, "integer", "Number of cores",
-	'number', 'n', 1, "logical", "Whether to use chr numbers (say 5) or chr names (say chr5). Depends on how the chromosomes are named in the BAM files."
+	'number', 'n', 1, "logical", "Whether to use chr numbers (say 5) or chr names (say chr5). Depends on how the chromosomes are named in the BAM files.",
 	'verbose' , 'v', 2, "logical", "Print status updates",
 	'help' , 'h', 0, "logical", "Display help"
 ), byrow=TRUE, ncol=5)
