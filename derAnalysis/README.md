@@ -5,9 +5,9 @@ This folder has the scripts for running the main parts of the __derfinder2__ ana
 
 # derfinder2-analysis.R
 
-This R script is the main script for running the __derfinder2__ analysis pipeline. It runs the main steps __makeModels()__, __preprocessCoverage()__, __calculateStats()__, __calculatePvalues()__ and ends with __annotateNearest()__ from the __bumphunter__ package.
+This R script is the main script for running the __derfinder2__ analysis pipeline. It runs the main steps of the pipeline by using __analyzeChr()__ which is a wrapper for running __makeModels()__, __preprocessCoverage()__, __calculateStats()__, __calculatePvalues()__ and ends with __annotateNearest()__ from the __bumphunter__ package.
 
-The script is written in such a way that each step of the pipeline is timed as this information can be useful later on. When running __derfinder2__ yourself you will have to modify this script in such a way that the models are constructed according to your own data. Most of the other steps will remain untouched, except for options like cutoffs.
+The script is written in such a way that each step of the pipeline is timed as this information can be useful later on. When running __derfinder2__ yourself you will have to modify this script in such a way that the models are constructed according to your own data. Special attention should be payed to options like cutoffs.
 
 # der2Analysis.sh
 
@@ -17,18 +17,10 @@ Another easy to change option is the PREFIX. This is the where the output from t
 
 This script creates several hidden shell scripts that are then submitted to the cluster.
 
-# derfinder2-merge.R
+# der2Merge.sh
 
-This R script merges the output from `derfinder2-analysis.R` that is then used in `basicExploration.Rmd`. Pretty much the only option you need to change is the PREFIX.
+This shell script loads the genomic state information and then merges the output from `derfinder2-analysis.R` by running __mergeResults()__. It generates all the results needed for running __generateReport()__
 
-# basicExploration.Rmd
+# der2Report.sh
 
-This R markdown file generates an HTML report exploring the basic results from the `derfinder2` analysis pipeline. It is rather long (500+ lines) and we recommend building your own advanced report after exploring the results with this one.
-
-# basicExplore-run1.sh
-
-This shell script runs `basicExploration.Rmd` via [knitrBootstrap](https://github.com/jimhester/knitrBootstrap). Note that the number of cores used can have dramatic consequences on the amount of RAM used: a big chunk comes from loading `../fullCoverage/fullCov.Rdata` when the data set is rich in samples and/or coverage depth.
-
-This shell script is written for the default PREFIX _run1_. We recommend making copies of this script for other prefixes.
-
-It creates a hidden shell script that is then submitted to the cluster.
+This shell script runs __generateReport()__ and creates the HTML report.
