@@ -1,7 +1,7 @@
 ### Helper script for loading the data
 
 ## Load the coverage information without 
-fullCov <- fullCoverage(dirs=dirs, chrnums='chr', c(1:22, 'X', 'Y'), mc.cores=cores, verbose=TRUE)
+fullCov <- fullCoverage(dirs=dirs, chrnums=c(1:22, 'X', 'Y'), mc.cores=cores, verbose=TRUE)
 
 message(paste(Sys.time(), "Saving the full (unfiltered) coverage data"))
 ## Needed for some data sets as derfinder2 assumes no names start with chr, but might be changed
