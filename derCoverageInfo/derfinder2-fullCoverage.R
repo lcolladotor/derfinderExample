@@ -79,7 +79,7 @@ myFilt <- function(chrnum) {
 	res <- filterData(data=fullCov[[chrnum]], cutoff=opt$cutoff, index=NULL, colnames=names(dirs), verbose=opt$verbose)
 	
 	## Save it in a unified name format
-	varname <- paste0(chrnum, "CovInfo")
+	varname <- paste0("chr", chrnum, "CovInfo")
 	assign(varname, res)
 	output <- paste0(varname, ".Rdata")
 	
@@ -91,7 +91,7 @@ myFilt <- function(chrnum) {
 }
 
 if(opt$verbose) message(paste(Sys.time(), "Filtering and saving the data"))
-filteredCov <- mclapply(chrnums, myFilt, mc.cores=opt$mcores)
+filteredCov <- mclapply(names(chrnums), myFilt, mc.cores=opt$mcores)
 #### Normally you don't need the data in this list
 ## save(filteredCov, file="filteredCov.Rdata")
 
