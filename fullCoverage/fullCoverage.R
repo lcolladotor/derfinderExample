@@ -27,7 +27,7 @@ myFilt <- function(x) {
 
 message(paste(Sys.time(), "Filtering and saving the data"))
 library("parallel")
-covList <- mclapply(fullCov, myFilt, mc.cores=cores)
+covList <- mclapply(fullCov, myFilt, mc.cores=cores, mc.preschedule=FALSE)
 
 ## Done!
 proc.time()
