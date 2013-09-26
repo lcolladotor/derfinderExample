@@ -8,7 +8,10 @@ DATADIR=${MAINDIR}/thout
 # Define variables
 SHORT='fullCov-derEx'
 
-## If you have enough cores, use 1 per chr
+## If you have enough cores, RAM, and fast I/O speed then use 1 per chr
+## Note that the memory load is much smaller if you run loadCoverage() in batch
+## Check https://github.com/lcolladotor/derfinderExample/tree/v0.0.13/fullCoverage 
+## on how it can be done.
 CORES=24
 
 # Construct shell file
