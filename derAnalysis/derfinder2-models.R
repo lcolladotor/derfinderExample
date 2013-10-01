@@ -24,7 +24,7 @@ group <- genomeInfo$pop
 adjustvars <- data.frame(genomeInfo$gender)
 
 ## Define the library size adjustments
-sampleDepths <- sampleDepth(fullCov=filteredCov, prob=0.9, nonzero=TRUE, center=TRUE, colsubset=NULL, verbose=TRUE)
+sampleDepths <- sampleDepth(fullCov=filteredCov, prob=0.9, nonzero=TRUE, center=FALSE, colsubset=NULL, verbose=TRUE)
 save(sampleDepths, file="sampleDepths.Rdata")
 
 ## Build the models
