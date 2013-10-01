@@ -20,7 +20,7 @@ A set of HapMap samples was downloaded to [reads](https://github.com/lcolladotor
 
 The coverage information was processed using __derfinder2__ and prepared for downstream analyses. 
 
-First, the un-filtered coverage was saved in [derCoverageInfo](https://github.com/lcolladotor/derfinderExample/tree/master/derCoverageInfo) as `fullCov.Rdata`. This can be useful later on for making coverage plots to evaluate whether visually whether the method is picking up sensible regions. 
+First, the un-filtered coverage was saved in [derCoverageInfo](https://github.com/lcolladotor/derfinderExample/tree/master/derCoverageInfo) as `fullCov.Rdata`. This can be useful later on for making coverage plots to visually inspect whether the method is picking up sensible regions. 
 
 Second, the filtered coverage was saved in [derCoverageInfo](https://github.com/lcolladotor/derfinderExample/tree/master/derCoverageInfo) separately for each chromosome in `chr*CovInfo.Rdata`.
 

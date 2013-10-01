@@ -75,8 +75,8 @@ dirs <- colnames(data$coverage)
 
 ## The information table for this data set is included in derfinder2
 info <- genomeInfo
-## Match dirs with actual rows in the info table
 
+## Match dirs with actual rows in the info table
 match <- sapply(dirs, function(x) { which(info$run == x)})
 info <- info[match, ]
 

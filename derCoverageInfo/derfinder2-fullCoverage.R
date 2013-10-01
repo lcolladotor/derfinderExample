@@ -92,8 +92,8 @@ myFilt <- function(chrnum) {
 
 if(opt$verbose) message(paste(Sys.time(), "Filtering and saving the data"))
 filteredCov <- mclapply(names(chrnums), myFilt, mc.cores=opt$mcores)
-#### Normally you don't need the data in this list
-## save(filteredCov, file="filteredCov.Rdata")
+## This is needed for sampleDepth()
+save(filteredCov, file="filteredCov.Rdata")
 
 ## Done!
 proc.time()
