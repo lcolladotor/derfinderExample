@@ -1,5 +1,8 @@
 #!/bin/sh
 
+## Usage
+# sh der2Analysis.sh run1-v0.0.28
+
 # Directories
 MAINDIR=/amber2/scratch/lcollado/derfinderExample
 WDIR=${MAINDIR}/derAnalysis
@@ -7,7 +10,7 @@ DATADIR=${MAINDIR}/derCoverageInfo
 
 # Define variables
 SHORT='der2A-Ex'
-PREFIX='run1-v0.0.28'
+PREFIX=$1
 CORES=2
 
 # Construct shell files
