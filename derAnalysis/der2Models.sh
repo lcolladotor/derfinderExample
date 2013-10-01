@@ -12,7 +12,7 @@ SHORT='der2Mod-Ex'
 PREFIX=$1
 
 # Construct shell files
-outdir="${PREFIX}/"
+outdir="${PREFIX}"
 sname="${SHORT}.${PREFIX}"
 echo "Creating script ${sname}"
 cat > ${WDIR}/.${sname}.sh <<EOF
