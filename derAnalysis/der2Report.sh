@@ -23,7 +23,7 @@ date
 mkdir -p ${WDIR}/${outdir}/logs
 
 # merge results
-Rscript -e "library(derfinder2); load('${MAINDIR}/derCoverageInfo/fullCov.Rdata'); generateReport(prefix='${PREFIX}', browse=FALSE, nBestClusters=20, fullCov=fullCov, device='CairoPNG')"
+Rscript -e "library(derfinderReport); load('${MAINDIR}/derCoverageInfo/fullCov.Rdata'); generateReport(prefix='${PREFIX}', browse=FALSE, nBestClusters=20, fullCov=fullCov, device='CairoPNG')"
 
 # Move log files into the logs directory
 mv ${WDIR}/${sname}.* ${WDIR}/${outdir}/logs/

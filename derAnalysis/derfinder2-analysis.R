@@ -3,8 +3,8 @@
 ## Load libraries
 library("getopt")
 
-## Available at https://github.com/lcolladotor/derfinder2
-library("derfinder2")
+## Available at https://github.com/lcolladotor/derfinder
+library("derfinder")
 
 ## Specify parameters
 spec <- matrix(c(

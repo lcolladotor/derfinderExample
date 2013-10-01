@@ -7,7 +7,7 @@ DATADIR=${MAINDIR}/derCoverageInfo
 
 # Define variables
 SHORT='der2A-Ex'
-PREFIX='run1-v0.0.24'
+PREFIX='run1-v0.0.28'
 CORES=2
 
 # Construct shell files

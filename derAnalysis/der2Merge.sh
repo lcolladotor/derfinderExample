@@ -23,7 +23,7 @@ date
 mkdir -p ${WDIR}/${outdir}/logs
 
 # merge results
-Rscript-devel -e "library(derfinder2); load('/amber2/scratch/lcollado/derfinderExample/derGenomicState/GenomicState.Hsapiens.UCSC.hg19.knownGene.Rdata'); mergeResults(prefix='${PREFIX}', genomicState=GenomicState.Hsapiens.UCSC.hg19.knownGene)"
+Rscript-devel -e "library(derfinder); load('/amber2/scratch/lcollado/derfinderExample/derGenomicState/GenomicState.Hsapiens.UCSC.hg19.knownGene.Rdata'); mergeResults(prefix='${PREFIX}', genomicState=GenomicState.Hsapiens.UCSC.hg19.knownGene)"
 
 # Move log files into the logs directory
 mv ${WDIR}/${sname}.* ${WDIR}/${outdir}/logs/
