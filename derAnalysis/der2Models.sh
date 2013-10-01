@@ -1,14 +1,14 @@
 #!/bin/sh
 
 ## Usage
-# sh der2Merge.sh run1-v0.0.28
+# sh der2Models.sh run1-v0.0.28
 
 # Directories
 MAINDIR=/amber2/scratch/lcollado/derfinderExample
 WDIR=${MAINDIR}/derAnalysis
 
 # Define variables
-SHORT='der2M-Ex'
+SHORT='der2Mod-Ex'
 PREFIX=$1
 
 # Construct shell files
@@ -23,7 +23,8 @@ date
 mkdir -p ${WDIR}/${outdir}/logs
 
 # merge results
-Rscript-devel -e "library(derfinder); load('/amber2/scratch/lcollado/derfinderExample/derGenomicState/GenomicState.Hsapiens.UCSC.hg19.knownGene.Rdata'); mergeResults(prefix='${PREFIX}', genomicState=GenomicState.Hsapiens.UCSC.hg19.knownGene)"
+cd ${WDIR}/${outdir}/
+Rscript-devel -e ${WDIR}/derfinder2-models.R
 
 # Move log files into the logs directory
 mv ${WDIR}/${sname}.* ${WDIR}/${outdir}/logs/

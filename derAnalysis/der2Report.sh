@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ## Usage
-# sh der2Report.sh run1-v0.0.24
+# sh der2Report.sh run1-v0.0.28
 
 # Directories
 MAINDIR=/amber2/scratch/lcollado/derfinderExample

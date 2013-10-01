@@ -1,4 +1,4 @@
-## Run derfinder2's analysis steps with timing info
+## Run derfinder's analysis steps with timing info
 
 ## Load libraries
 library("getopt")
@@ -67,25 +67,14 @@ if(test) {
 	data <- tmp
 }
 
-## Identify the sampledirs
-dirs <- colnames(data$coverage)
+## Load the models
+load("models.Rdata")
 
-##### Note that this whole section is for defining the models using makeModels()
-##### You can alternatively define them manually and/or use packages such as splines if needed.
-
-## The information table for this data set is included in derfinder2
-info <- genomeInfo
-
-## Match dirs with actual rows in the info table
-match <- sapply(dirs, function(x) { which(info$run == x)})
-info <- info[match, ]
-
-## Define the groups
-group <- genomeInfo$pop
-adjustvars <- data.frame(genomeInfo$gender)
+## Load group information
+load("groupInfo.Rdata")
 
 ## Run the analysis
-analyzeChr(chrnum=opt$chr, coverageInfo=data, testvars=group, adjustvars=adjustvars, cutoffFstat=1e-05, cutoffType="theoretical", nPermute=10, seeds=1:10, maxClusterGap=3000, subject="hg19", mc.cores=opt$mcores, verbose=opt$verbose)
+analyzeChr(chrnum=opt$chr, coverageInfo=data, models=models, cutoffFstat=1e-05, cutoffType="theoretical", nPermute=10, maxClusterGap=3000, groupInfo=groupInfo, subject="hg19", mc.cores=opt$mcores, verbose=opt$verbose)
 
 
 if(opt$prof) {
