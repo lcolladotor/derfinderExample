@@ -12,7 +12,7 @@ dirs <- colnames(filteredCov[[1]]$coverage)
 ##### Note that this whole section is for defining the models using makeModels()
 ##### You can alternatively define them manually and/or use packages such as splines if needed.
 
-## The information table for this data set is included in derfinder2
+## The information table for this data set is included in derfinder
 info <- genomeInfo
 
 ## Match dirs with actual rows in the info table
