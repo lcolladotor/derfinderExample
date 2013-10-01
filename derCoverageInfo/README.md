@@ -5,11 +5,17 @@ This folder has the scripts for extracting the un-filtered coverage information 
 
 # der2Fullcoverage.sh
 
-This shell script creates a single hidden shell script that is then submitted to the cluster and runs `derfinder2-fullCoverage.R`.
+This shell script creates a single hidden shell script that is then submitted to the cluster and runs `derfinder2-fullCoverage.R`. Example usage:
+
+```bash
+sh der2Fullcoverage.sh
+```
+
 
 # derfinder2-fullCoverage.R
 
-This R script runs __derfinder2__ data processing steps: __makeBamList()__, __fullCoverage()__ and __filterData()__. 
+This R script runs __derfinder__ data processing steps: __makeBamList()__, __fullCoverage()__ and __filterData()__. 
 
-* The coverage cutoff used is set to _NULL_ so that no filtering will be done when processing the BAM files. This information is saved for downstream steps such as using __generateReport()__.
+* The coverage cutoff used is set to _NULL_ so that no filtering will be done when processing the BAM files. This information is saved in `fullCov.Rdata` for downstream steps such as using __generateReport()__.
 * From the unfiltered data, then __filterData()__ is used to filter the information and split it by chromosome for running the processing steps such as __analyzeChr()__.
+* The filtered data (in a list by chr) is saved as `filteredCov.Rdata` for use in __sampleDepth()__.
