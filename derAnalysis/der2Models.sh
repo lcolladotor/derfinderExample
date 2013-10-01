@@ -24,7 +24,7 @@ mkdir -p ${WDIR}/${outdir}/logs
 
 # merge results
 cd ${WDIR}/${outdir}/
-Rscript-devel -e ${WDIR}/derfinder2-models.R
+Rscript-devel ${WDIR}/derfinder2-models.R
 
 # Move log files into the logs directory
 mv ${WDIR}/${sname}.* ${WDIR}/${outdir}/logs/
