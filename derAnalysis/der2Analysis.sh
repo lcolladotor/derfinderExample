@@ -32,7 +32,7 @@ mkdir -p ${WDIR}/${outdir}/logs
 
 # run derfinder2-analysis.R
 cd ${WDIR}/${PREFIX}/
-Rscript-devel ${WDIR}/derfinder2-analysis.R -d "${DATADIR}/${chr}CovInfo.Rdata" -c "${chrnum}" -m ${CORES} -v TRUE
+Rscript ${WDIR}/derfinder2-analysis.R -d "${DATADIR}/${chr}CovInfo.Rdata" -c "${chrnum}" -m ${CORES} -v TRUE
 
 # Move log files into the logs directory
 mv ${WDIR}/${sname}.* ${WDIR}/${outdir}/logs/

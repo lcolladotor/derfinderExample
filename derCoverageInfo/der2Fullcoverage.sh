@@ -25,7 +25,7 @@ date
 mkdir -p ${WDIR}/logs
 
 # Load the data, save the coverage without filtering, then save each file separately
-Rscript-devel ${WDIR}/derfinder2-fullCoverage.R -d "${DATADIR}" -p "RR" -c 5 -m ${CORES} -n TRUE -v TRUE
+Rscript ${WDIR}/derfinder2-fullCoverage.R -d "${DATADIR}" -p "RR" -c 5 -m ${CORES} -n TRUE -v TRUE
 
 ## Move log files into the logs directory
 mv ${SHORT}.* ${WDIR}/logs/

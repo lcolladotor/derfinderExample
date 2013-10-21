@@ -1,7 +1,7 @@
 Explanation of files
 ====================
 
-This folder has the scripts for extracting the un-filtered coverage information from the BAM files. It also generates the filtered data in ../derCoverageInfo. Alternatively, you can load the raw data and process it twice: once without any filter and once with filtering. But doing it this way is useful if you only want to read the raw data once. Check the alternative way which was used earlier [here](https://github.com/lcolladotor/derfinderExample/tree/v0.0.13/fullCoverage).
+This folder has the scripts for extracting the un-filtered coverage information from the BAM files. It also generates the filtered data in ../derCoverageInfo. Alternatively, you can load the raw data and process it twice: once without any filter and once with filtering. But doing it this way is useful if you only want to read the raw data once. Check the alternative way as shown in [fullCoverage](https://github.com/lcolladotor/derfinderExample/tree/master/fullCoverage) 
 
 # der2Fullcoverage.sh
 
