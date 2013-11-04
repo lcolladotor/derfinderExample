@@ -29,7 +29,7 @@ if(test) {
 ## Test values
 if(test){
 	opt <- NULL
-	opt$datadir <- "/amber2/scratch/lcollado/derfinderExample/thout"
+	opt$datadir <- "/dcs01/lieber/ajaffe/Brain/derRuns/derfinderExample/thout"
 	opt$pattern <- "RR"
 	opt$cutoff <- 5
 	opt$mcores <- 1

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Directories
-MAINDIR=/amber2/scratch/lcollado/derfinderExample
+MAINDIR=/dcs01/lieber/ajaffe/Brain/derRuns/derfinderExample
 WDIR=${MAINDIR}/fullCoverage
 
 # Define variables
@@ -21,7 +21,7 @@ date
 mkdir -p ${WDIR}/logs
 
 # Load unfiltered data
-R -e "library(derfinder); ; dirs <- makeBamList(datadir='/amber2/scratch/lcollado/derfinderExample/thout', samplepatt='RR'); loadCoverage(dirs=dirs, chr='${chr}', cutoff=NULL, output='auto', verbose=TRUE); proc.time(); sessionInfo()"
+R -e "library(derfinder); ; dirs <- makeBamList(datadir='/dcs01/lieber/ajaffe/Brain/derRuns/derfinderExample/thout', samplepatt='RR'); loadCoverage(dirs=dirs, chr='${chr}', cutoff=NULL, output='auto', verbose=TRUE); proc.time(); sessionInfo()"
 
 ## Move log files into the logs directory
 mv ${SHORT}.${chr}.* ${WDIR}/logs/

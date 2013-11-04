@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Directories
-MAINDIR=/amber2/scratch/lcollado/derfinderExample
+MAINDIR=/dcs01/lieber/ajaffe/Brain/derRuns/derfinderExample
 WDIR=${MAINDIR}/thout
 DATADIR=${MAINDIR}/reads
 

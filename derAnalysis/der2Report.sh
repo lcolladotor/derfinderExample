@@ -4,7 +4,7 @@
 # sh der2Report.sh run1-v0.0.28
 
 # Directories
-MAINDIR=/amber2/scratch/lcollado/derfinderExample
+MAINDIR=/dcs01/lieber/ajaffe/Brain/derRuns/derfinderExample
 WDIR=${MAINDIR}/derAnalysis
 
 # Define variables
