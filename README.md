@@ -49,7 +49,7 @@ Please download this repository and open [derAnalysis/run1-v0.0.28/basicExplorat
 
 # Installation instructions
 
-Get R 3.0.1 or newer from [CRAN](http://cran.r-project.org/).
+Get R 3.0.2 or newer from [CRAN](http://cran.r-project.org/).
 
 ```S
 ## If needed
