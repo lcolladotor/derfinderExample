@@ -80,7 +80,7 @@ install.packages("getopt")
 biocLite("SRAdb")
 ```
 
-Note that the current [Bioconductor](http://www.bioconductor.org/) release version of __bumphunter__ for R 3.0.1 is a few versions before the one required by __derfinder__. The version needed can be installed manually from http://bioconductor.org/packages/2.13/bioc/html/bumphunter.html You can download the source or other binaries.
+Note that the current [Bioconductor](http://www.bioconductor.org/) release version of __bumphunter__ for R 3.0.2 is a few versions before the one required by __derfinder__. The version needed can be installed manually from http://bioconductor.org/packages/devel/bioc/html/bumphunter.html You can download the source or other binaries.
 
 # 'Watch' for updates
 
