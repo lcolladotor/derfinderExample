@@ -4,7 +4,7 @@
 # sh der2Models.sh run1-v0.0.28
 
 # Directories
-MAINDIR=/dcs01/lieber/ajaffe/Brain/derRuns/derfinderExample
+MAINDIR=/dcl01/lieber/ajaffe/derRuns/derfinderExample
 WDIR=${MAINDIR}/derAnalysis
 
 # Define variables

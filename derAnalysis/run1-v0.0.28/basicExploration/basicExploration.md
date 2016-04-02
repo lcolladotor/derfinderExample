@@ -70975,7 +70975,7 @@ The results were merged using the following call to `mergeResults()`:
 </div></div>
 
 
-This report was generated in path <code class="knitr inline">/dcs01/lieber/ajaffe/Brain/derRuns/derfinderExample/derAnalysis</code> using the following call to `generateReport()`:
+This report was generated in path <code class="knitr inline">/dcl01/lieber/ajaffe/derRuns/derfinderExample/derAnalysis</code> using the following call to `generateReport()`:
 
 <div class="chunk" id="thecall"><div class="rcode"><div class="output"><pre class="knitr r">## generateReport(prefix = "run1-v0.0.28", browse = FALSE, nBestClusters = 20, 
 ##     fullCov = fullCov, device = "CairoPNG")

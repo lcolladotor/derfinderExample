@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Directories
-MAINDIR=/dcs01/lieber/ajaffe/Brain/derRuns/derfinderExample
+MAINDIR=/dcl01/lieber/ajaffe/derRuns/derfinderExample
 WDIR=${MAINDIR}/derCoverageInfo
 DATADIR=${MAINDIR}/thout
 
